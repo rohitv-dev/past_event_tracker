@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="placeholder_title">Extremely long title that does nothing particular but something awesome</string>
+<!--    <string name="placeholder_title">Title</string>-->
+    <string name="placeholder_time_elapsed">Elapsed time</string>
+    <string name="placeholder_date">Date</string>
+    <string name="placeholder_refresh_btn">Refresh</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">Trust no one, not even AP.</string>
+</resources>

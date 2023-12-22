@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:past_event_tracker/database/tables.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
@@ -38,6 +41,12 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deleteEvent(int id) {
     return (delete(events)..where((e) => e.id.equals(id))).go();
+  }
+
+  Future<void> addEvents(List<EventsCompanion> eventsList) {
+    return batch((batch) {
+      batch.insertAll(events, eventsList);
+    });
   }
 
   Future<int> addEvent(EventsCompanion event) {
@@ -79,12 +88,17 @@ class AppDatabase extends _$AppDatabase {
 }
 
 LazyDatabase _openConnection() {
-  // the LazyDatabase util lets us find the right location for the file async.
   return LazyDatabase(() async {
-    // put the database file, called db.sqlite here, into the documents folder
-    // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'past_event_tracker.sqlite'));
+
+    if (Platform.isAndroid) {
+      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    }
+
+    final cachebase = (await getTemporaryDirectory()).path;
+    sqlite3.tempDirectory = cachebase;
+
     return NativeDatabase.createInBackground(file);
   });
 }

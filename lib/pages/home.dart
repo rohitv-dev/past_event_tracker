@@ -1,6 +1,4 @@
-import 'dart:math';
-
-import 'package:drift/drift.dart' as d;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:past_event_tracker/components/dialogs/filter_sort_dialog.dart';
@@ -9,12 +7,7 @@ import 'package:past_event_tracker/components/event_card.dart';
 import 'package:past_event_tracker/database/database.dart';
 import 'package:past_event_tracker/components/dialogs/upsert_event_dialog.dart';
 import 'package:past_event_tracker/providers/database_provider.dart';
-
-String generateRandomString(int len) {
-  var r = Random();
-  const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-  return List.generate(len, (index) => _chars[r.nextInt(_chars.length)]).join();
-}
+import 'package:past_event_tracker/utils/event_functions.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -37,42 +30,22 @@ class _HomePageState extends ConsumerState<HomePage> {
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
         actions: [
-          GestureDetector(
-            onTap: () async {
-              // await deleteDatabase();
-              var rng = Random();
-              for (int i = 0; i < 50; i++) {
-                var event = EventsCompanion.insert(
-                  title: generateRandomString(10),
-                  date: DateTime.now().subtract(
-                    Duration(
-                      days: rng.nextInt(10) + 1,
-                      hours: rng.nextInt(5) + 2,
-                      minutes: rng.nextInt(30),
-                    ),
-                  ),
-                  isActive: d.Value(true),
-                );
-                await ref.read(databaseProvider).addEvent(event);
-              }
-              // await HomeWidget.saveWidgetData<String>("event_title", "Obama");
-
-              // await HomeWidget.saveWidgetData<String>(
-              //   "event_time_elapsed",
-              //   DateTime.now()
-              //       .subtract(
-              //         Duration(
-              //           days: rng.nextInt(10) + 1,
-              //           hours: rng.nextInt(5) + 2,
-              //           minutes: rng.nextInt(30),
-              //         ),
-              //       )
-              //       .toIso8601String(),
-              // );
-              // await HomeWidget.updateWidget(androidName: "EventTrackerWidget");
-            },
-            child: const Icon(Icons.dangerous, color: Colors.red),
-          ),
+          if (kDebugMode) ...[
+            GestureDetector(
+              onTap: () async {
+                await deleteDatabase();
+              },
+              child: const Icon(Icons.dangerous, color: Colors.red),
+            ),
+            const SizedBox(width: 5),
+            GestureDetector(
+              onTap: () async {
+                final events = generateEvents(10);
+                await ref.read(databaseProvider).addEvents(events);
+              },
+              child: const Icon(Icons.add, color: Colors.blue),
+            )
+          ],
           const SizedBox(width: 5),
           GestureDetector(
             onTap: () {
